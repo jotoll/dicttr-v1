@@ -2,6 +2,13 @@
   "name": "dicttr-backend",
   "description": "Dicttr Backend API",
   "dockerCompose": "docker-compose.coolify.yml",
+  "healthCheck": {
+    "path": "/health",
+    "port": 3001,
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3
+  },
   "environment": [
     {
       "name": "NODE_ENV",
