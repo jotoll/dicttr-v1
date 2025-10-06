@@ -26,6 +26,13 @@ class TranscriptionService {
         apiKey: groqApiKey
       });
 
+      // Verificar si el idioma es soportado por Whisper
+      const supportedLanguages = ['es', 'en', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'zh', 'ar', 'nl', 'tr', 'pl', 'uk', 'ko', 'hi'];
+      if (!supportedLanguages.includes(language)) {
+        console.log(`⚠️  Idioma "${language}" no soportado por Whisper, usando español por defecto`);
+        language = 'es';
+      }
+
       // Verificar tamaño del archivo (límite: 100MB)
       const stats = fs.statSync(audioFile);
       const fileSizeMB = stats.size / (1024 * 1024);
@@ -105,28 +112,77 @@ class TranscriptionService {
     const fileSizeMB = stats.size / (1024 * 1024);
     const duration = this.estimateDuration(audioFile);
 
-    // Textos de ejemplo para diferentes duraciones e idiomas
+    // Textos de ejemplo para diferentes duraciones e idiomas - más neutros y versátiles
     const sampleTexts = {
       es: [
-        "Hoy vamos a estudiar la fotosíntesis. La fotosíntesis es el proceso por el cual las plantas convierten la luz solar en energía química. Este proceso ocurre en los cloroplastos y tiene dos fases principales: la fase luminosa y la fase oscura o ciclo de Calvin.",
-        "En esta clase vamos a analizar los principios fundamentales de la física cuántica. La mecánica cuántica describe el comportamiento de partículas subatómicas y ha revolucionado nuestra comprensión del universo a nivel microscópico.",
-        "Vamos a estudiar la historia del arte renacentista. El Renacimiento fue un período de gran creatividad artística en Europa, caracterizado por el redescubrimiento de la cultura clásica y el desarrollo de nuevas técnicas como la perspectiva.",
-        "En esta sesión vamos a repasar los conceptos básicos de programación. La programación es el proceso de crear instrucciones para que una computadora ejecute tareas específicas, utilizando lenguajes como Python, JavaScript o Java.",
-        "Hoy vamos a aprender sobre anatomía humana. El cuerpo humano está compuesto por sistemas que trabajan en conjunto, incluyendo el sistema nervioso, circulatorio, respiratorio y digestivo."
+        "En esta reunión vamos a discutir los principales puntos del proyecto. Es importante que todos estemos alineados en los objetivos y plazos establecidos. Vamos a revisar el progreso actual y definir los próximos pasos a seguir.",
+        "Hoy vamos a analizar las tendencias del mercado actual. Es fundamental entender cómo evoluciona el entorno empresarial para tomar decisiones estratégicas adecuadas. Consideremos los factores económicos, tecnológicos y sociales que influyen en nuestro sector.",
+        "En esta presentación vamos a explorar diferentes enfoques para resolver el problema. Cada alternativa tiene sus ventajas y desventajas, por lo que debemos evaluarlas cuidadosamente antes de tomar una decisión final.",
+        "Vamos a revisar los resultados del último trimestre. Los datos muestran un crecimiento positivo en la mayoría de las áreas, aunque hay algunos aspectos que requieren atención inmediata para mantener el impulso actual.",
+        "En esta sesión vamos a compartir experiencias y mejores prácticas. El intercambio de conocimientos entre los participantes puede generar nuevas ideas y soluciones innovadoras para los desafíos que enfrentamos."
       ],
       en: [
-        "Today we're going to study photosynthesis. Photosynthesis is the process by which plants convert sunlight into chemical energy. This process occurs in chloroplasts and has two main phases: the light phase and the dark phase or Calvin cycle.",
-        "In this class we will analyze the fundamental principles of quantum physics. Quantum mechanics describes the behavior of subatomic particles and has revolutionized our understanding of the universe at the microscopic level.",
-        "We are going to study the history of Renaissance art. The Renaissance was a period of great artistic creativity in Europe, characterized by the rediscovery of classical culture and the development of new techniques like perspective.",
-        "In this session we will review the basic concepts of programming. Programming is the process of creating instructions for a computer to perform specific tasks, using languages like Python, JavaScript, or Java.",
-        "Today we're going to learn about human anatomy. The human body is composed of systems that work together, including the nervous, circulatory, respiratory, and digestive systems."
+        "In this meeting we will discuss the main points of the project. It's important that we are all aligned on the established objectives and deadlines. Let's review the current progress and define the next steps to follow.",
+        "Today we will analyze current market trends. It's essential to understand how the business environment evolves to make appropriate strategic decisions. Let's consider the economic, technological, and social factors that influence our sector.",
+        "In this presentation we will explore different approaches to solve the problem. Each alternative has its advantages and disadvantages, so we must evaluate them carefully before making a final decision.",
+        "Let's review the results of the last quarter. The data shows positive growth in most areas, although there are some aspects that require immediate attention to maintain the current momentum.",
+        "In this session we will share experiences and best practices. The exchange of knowledge among participants can generate new ideas and innovative solutions for the challenges we face."
       ],
       fr: [
-        "Aujourd'hui, nous allons étudier la photosynthèse. La photosynthèse est le processus par lequel les plantes convertissent la lumière du soleil en énergie chimique. Ce processus se produit dans les chloroplastes et comporte deux phases principales : la phase lumineuse et la phase sombre ou cycle de Calvin.",
-        "Dans ce cours, nous allons analyser les principes fondamentaux de la physique quantique. La mécanique quantique décrit le comportement des particules subatomiques et a révolutionné notre compréhension de l'univers au niveau microscopique.",
-        "Nous allons étudier l'histoire de l'art de la Renaissance. La Renaissance a été une période de grande créativité artistique en Europe, caractérisée par la redécouverte de la culture classique et le développement de nouvelles techniques comme la perspective.",
-        "Dans cette session, nous allons revoir les concepts de base de la programmation. La programmation est le processus de création d'instructions pour qu'un ordinateur exécute des tâches spécifiques, en utilisant des langages comme Python, JavaScript ou Java.",
-        "Aujourd'hui, nous allons apprendre l'anatomie humaine. Le corps humain est composé de systèmes qui travaillent ensemble, y compris les systèmes nerveux, circulatoire, respiratoire et digestif."
+        "Dans cette réunion, nous allons discuter des principaux points du projet. Il est important que nous soyons tous alignés sur les objectifs et délais établis. Passons en revue les progrès actuels et définissons les prochaines étapes à suivre.",
+        "Aujourd'hui, nous allons analyser les tendances actuelles du marché. Il est essentiel de comprendre comment l'environnement des affaires évolue pour prendre des décisions stratégiques appropriées. Considérons les facteurs économiques, technologiques et sociaux qui influencent notre secteur.",
+        "Dans cette présentation, nous allons explorer différentes approches pour résoudre le problème. Chaque alternative a ses avantages et inconvénients, nous devons donc les évaluer soigneusement avant de prendre une décision finale.",
+        "Passons en revue les résultats du dernier trimestre. Les données montrent une croissance positive dans la plupart des domaines, bien qu'il y ait certains aspects qui nécessitent une attention immédiate pour maintenir l'élan actuel.",
+        "Dans cette session, nous allons partager des expériences et des meilleures pratiques. L'échange de connaissances entre les participants peut générer de nouvelles idées et des solutions innovantes pour les défis auxquels nous sommes confrontés."
+      ],
+      de: [
+        "In diesem Meeting werden wir die Hauptpunkte des Projekts besprechen. Es ist wichtig, dass wir alle bezüglich der festgelegten Ziele und Fristen ausgerichtet sind. Lassen Sie uns den aktuellen Fortschritt überprüfen und die nächsten Schritte definieren.",
+        "Heute werden wir aktuelle Markttrends analysieren. Es ist entscheidend zu verstehen, wie sich das Geschäftsumfeld entwickelt, um angemessene strategische Entscheidungen zu treffen. Berücksichtigen wir die wirtschaftlichen, technologischen und sozialen Faktoren, die unseren Sektor beeinflussen.",
+        "In dieser Präsentation werden wir verschiedene Ansätze zur Lösung des Problems erkunden. Jede Alternative hat ihre Vor- und Nachteile, daher müssen wir sie sorgfältig bewerten, bevor wir eine endgültige Entscheidung treffen.",
+        "Lassen Sie uns die Ergebnisse des letzten Quartals überprüfen. Die Daten zeigen ein positives Wachstum in den meisten Bereichen, obwohl es einige Aspekte gibt, die sofortige Aufmerksamkeit erfordern, um den aktuellen Schwung beizubehalten.",
+        "In dieser Sitzung werden wir Erfahrungen und Best Practices teilen. Der Wissensaustausch zwischen den Teilnehmern kann neue Ideen und innovative Lösungen für die Herausforderungen generieren, denen wir gegenüberstehen."
+      ],
+      it: [
+        "In questa riunione discuteremo i punti principali del progetto. È importante che siamo tutti allineati sugli obiettivi e le scadenze stabiliti. Rivediamo i progressi attuali e definiamo i prossimi passi da seguire.",
+        "Oggi analizzeremo le tendenze attuali del mercato. È fondamentale capire come evolve l'ambiente aziendale per prendere decisioni strategiche appropriate. Consideriamo i fattori economici, tecnologici e sociali che influenzano il nostro settore.",
+        "In questa presentazione esploreremo diversi approcci per risolvere il problema. Ogni alternativa ha i suoi vantaggi e svantaggi, quindi dobbiamo valutarli attentamente prima di prendere una decisione finale.",
+        "Rivediamo i risultati dell'ultimo trimestre. I dati mostrano una crescita positiva nella maggior parte delle aree, anche se ci sono alcuni aspetti che richiedono attenzione immediata per mantenere l'attuale slancio.",
+        "In questa sessione condivideremo esperienze e best practice. Lo scambio di conoscenze tra i partecipanti può generare nuove idee e soluzioni innovative per le sfide che affrontiamo."
+      ],
+      pt: [
+        "Nesta reunião vamos discutir os principais pontos do projeto. É importante que todos estejamos alinhados nos objetivos e prazos estabelecidos. Vamos revisar o progresso atual e definir os próximos passos a seguir.",
+        "Hoje vamos analisar as tendências atuais do mercado. É fundamental entender como o ambiente empresarial evolui para tomar decisões estratégicas adequadas. Consideremos os fatores econômicos, tecnológicos e sociais que influenciam nosso setor.",
+        "Nesta apresentação vamos explorar diferentes abordagens para resolver o problema. Cada alternativa tem suas vantagens e desvantagens, por isso devemos avaliá-las cuidadosamente antes de tomar uma decisão final.",
+        "Vamos revisar os resultados do último trimestre. Os dados mostram um crescimento positivo na maioria das áreas, embora haja alguns aspectos que requerem atenção imediata para manter o impulso atual.",
+        "Nesta sessão vamos compartilhar experiências e melhores práticas. A troca de conhecimentos entre os participantes pode gerar novas ideias e soluções inovadoras para os desafios que enfrentamos."
+      ],
+      ru: [
+        "На этой встрече мы обсудим основные моменты проекта. Важно, чтобы мы все были согласованы по установленным целям и срокам. Давайте рассмотрим текущий прогресс и определим следующие шаги.",
+        "Сегодня мы проанализируем текущие рыночные тенденции. Необходимо понимать, как развивается бизнес-среда, чтобы принимать соответствующие стратегические решения. Рассмотрим экономические, технологические и социальные факторы, влияющие на наш сектор.",
+        "В этой презентации мы рассмотрим различные подходы к решению проблемы. Каждая альтернатива имеет свои преимущества и недостатки, поэтому мы должны тщательно их оценить, прежде чем принять окончательное решение.",
+        "Давайте рассмотрим результаты последнего квартала. Данные показывают положительный рост в большинстве областей, хотя есть некоторые аспекты, требующие немедленного внимания для поддержания текущего импульса.",
+        "На этой сессии мы поделимся опытом и лучшими практиками. Обмен знаниями между участниками может генерировать новые идеи и инновационные решения для вызовов, с которыми мы сталкиваемся."
+      ],
+      ja: [
+        "この会議ではプロジェクトの主要なポイントについて話し合います。確立された目標と期限について全員が一致していることが重要です。現在の進捗状況を確認し、次のステップを定義しましょう。",
+        "今日は現在の市場動向を分析します。適切な戦略的決定を下すために、ビジネス環境がどのように進化するかを理解することが不可欠です。私たちのセクターに影響を与える経済的、技術的、社会的要因を考慮しましょう。",
+        "このプレゼンテーションでは、問題を解決するためのさまざまなアプローチを探ります。各代替案には長所と短所があるため、最終決定を下す前に慎重に評価する必要があります。",
+        "前四半期の結果を確認しましょう。データはほとんどの分野でプラスの成長を示していますが、現在の勢いを維持するために即時の注意が必要な側面がいくつかあります。",
+        "このセッションでは、経験とベストプラクティスを共有します。参加者間の知識交換は、私たちが直面する課題に対する新しいアイデアと革新的なソリューションを生み出すことができます。"
+      ],
+      zh: [
+        "在这次会议中，我们将讨论项目的主要要点。重要的是我们所有人都要对已确定的目标和截止日期保持一致。让我们回顾当前的进展并定义接下来的步骤。",
+        "今天我们将分析当前的市场趋势。了解商业环境如何演变对于做出适当的战略决策至关重要。让我们考虑影响我们行业的经济、技术和社会因素。",
+        "在这次演示中，我们将探索解决问题的不同方法。每个替代方案都有其优缺点，因此我们必须在做出最终决定之前仔细评估它们。",
+        "让我们回顾上个季度的结果。数据显示大多数领域都有积极增长，尽管有一些方面需要立即关注以保持当前的势头。",
+        "在这次会议中，我们将分享经验和最佳实践。参与者之间的知识交流可以为我们面临的挑战产生新的想法和创新的解决方案。"
+      ],
+      ar: [
+        "في هذا الاجتماع سنناقش النقاط الرئيسية للمشروع. من المهم أن نكون جميعًا متوافقين بشأن الأهداف والمواعيد النهائية المحددة. دعونا نراجع التقدم الحالي ونحدد الخطوات التالية.",
+        "اليوم سنحلل اتجاهات السوق الحالية. من الضروري فهم كيفية تطور بيئة الأعمال لاتخاذ قرارات استراتيجية مناسبة. دعونا نأخذ في الاعتبار العوامل الاقتصادية والتكنولوجية والاجتماعية التي تؤثر على قطاعنا.",
+        "في هذا العرض التقديمي، سنستكشف نهجًا مختلفة لحل المشكلة. كل بديل له مزاياه وعيوبه، لذلك يجب علينا تقييمها بعناية قبل اتخاذ قرار نهائي.",
+        "دعونا نراجع نتائج الربع الأخير. تظهر البيانات نموًا إيجابيًا في معظم المجالات، على الرغم من وجود بعض الجوانب التي تتطلب اهتمامًا فوريًا للحفاظ على الزخم الحالي.",
+        "في هذه الجلسة، سنشارك الخبرات وأفضل الممارسات. يمكن لتبادل المعرفة بين المشاركين أن يولد أفكارًا جديدة وحلولًا مبتكرة للتحديات التي نواجهها."
       ]
     };
 
@@ -182,6 +238,13 @@ class TranscriptionService {
       if (deepseekApiKey.includes('invalid') || deepseekApiKey.includes('expired') || deepseekApiKey.length < 20) {
         console.log('⚠️  API key de DeepSeek parece inválida, usando mejora local');
         return this.localEnhancement(rawText, subject, translationLanguage);
+      }
+
+      // Verificar si el idioma de traducción es soportado por DeepSeek
+      const supportedTranslationLanguages = ['es', 'en', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'zh', 'ar', 'nl', 'tr', 'pl', 'uk', 'ko', 'hi'];
+      if (!supportedTranslationLanguages.includes(translationLanguage)) {
+        console.log(`⚠️  Idioma de traducción "${translationLanguage}" no soportado por DeepSeek, usando español por defecto`);
+        translationLanguage = 'es';
       }
 
       const systemPrompt = this.getSystemPrompt(subject, translationLanguage);
@@ -500,6 +563,14 @@ class TranscriptionService {
           { question: "À quoi sert Dicttr?", answer: "Pour créer des matériaux d'étude à partir d'enregistrements" }
         ]),
         concepts: "Concepts clés: transcription, étude, apprentissage, organisation"
+      },
+      ar: {
+        summary: `ملخص محلي تم إنشاؤه لـ: ${enhancedText.substring(0, 50)}...`,
+        flashcards: JSON.stringify([
+          { question: "ما هو النص؟", answer: "عملية تحويل الصوت إلى نص" },
+          { question: "ما هو الغرض من Dicttr؟", answer: "لإنشاء مواد دراسة من التسجيلات" }
+        ]),
+        concepts: "المفاهيم الرئيسية: النص، الدراسة، التعلم، التنظيم"
       }
     };
 
@@ -776,17 +847,21 @@ class TranscriptionService {
 
   // Prompts especializados por materia
   getSystemPrompt(subject, translationLanguage = 'es') {
-    const basePrompt = `Eres Dicttr AI, un asistente educativo especializado en mejorar transcripciones de clases universitarias. 
+    const basePrompt = `Eres Dicttr AI, un asistente especializado en mejorar transcripciones de audio para todo tipo de contenido.
 
 Tu objetivo es:
-1. Estructurar el contenido de forma clara y didáctica
+1. Estructurar el contenido de forma clara y organizada
 2. Corregir errores de transcripción y eliminar muletillas
-3. Identificar conceptos clave y añadir definiciones breves
+3. Mejorar la legibilidad y coherencia del texto
 4. Organizar la información en secciones lógicas
-5. Mantener un lenguaje académico pero accesible
+5. Mantener un lenguaje claro y profesional
 6. Crear bloques editables para cada elemento importante
 
-IMPORTANTE: Genera el contenido mejorado en el idioma "${translationLanguage}". Todo el contenido debe estar en este idioma.
+🚨🚨🚨 INSTRUCCIÓN CRÍTICA: 
+- Genera TODO el contenido mejorado EXCLUSIVAMENTE en el idioma "${translationLanguage}"
+- El título, párrafos, definiciones, ejemplos y resúmenes DEBEN estar en "${translationLanguage}"
+- NO mezcles idiomas bajo ninguna circunstancia
+- Si el idioma es árabe ("ar"), usa escritura de derecha a izquierda y caracteres árabes
 
 IMPORTANTE: Devuelve el contenido en formato JSON estructurado con el siguiente schema:
 
@@ -829,16 +904,18 @@ Reglas:
 - Usa "summary_block" para resúmenes generales
 - Usa "key_concepts_block" para listas de conceptos clave
 - Todos los bloques deben ser editables individualmente
-- Organiza el contenido de forma lógica y pedagógica
+- Organiza el contenido de forma lógica y coherente
 - Incluye tantos bloques como necesites para cubrir el tema completamente
 - Solo devuelve JSON válido, sin texto adicional
-- Todo el contenido debe estar en "${translationLanguage}"`;
+- 🚨 TODO el contenido DEBE estar en "${translationLanguage}"`;
 
     const subjectPrompts = {
       medicina: basePrompt + "\n\nEnfócate en terminología médica, procesos fisiológicos y casos clínicos.",
       ingenieria: basePrompt + "\n\nPrioriza fórmulas, procesos técnicos y aplicaciones prácticas.",
       derecho: basePrompt + "\n\nDestaca conceptos legales, jurisprudencia y casos de estudio.",
       ciencias: basePrompt + "\n\nExplica fenómenos científicos, teorías y metodologías experimentales.",
+      negocios: basePrompt + "\n\nEnfócate en terminología empresarial, estrategias y análisis de mercado.",
+      tecnologia: basePrompt + "\n\nPrioriza conceptos técnicos, procesos y aplicaciones tecnológicas.",
       general: basePrompt
     };
 
