@@ -1573,6 +1573,116 @@ IMPORTANTE:
     };
   }
 
+  // Traducir asunto a diferentes idiomas
+  translateSubject(subject, targetLanguage = 'es') {
+    const subjectTranslations = {
+      // Español (base)
+      es: {
+        'general': 'general',
+        'medicina': 'medicina',
+        'ingenieria': 'ingeniería',
+        'derecho': 'derecho',
+        'ciencias': 'ciencias',
+        'negocios': 'negocios',
+        'tecnologia': 'tecnología'
+      },
+      // Inglés
+      en: {
+        'general': 'general',
+        'medicina': 'medicine',
+        'ingenieria': 'engineering',
+        'derecho': 'law',
+        'ciencias': 'sciences',
+        'negocios': 'business',
+        'tecnologia': 'technology'
+      },
+      // Francés
+      fr: {
+        'general': 'général',
+        'medicina': 'médecine',
+        'ingenieria': 'ingénierie',
+        'derecho': 'droit',
+        'ciencias': 'sciences',
+        'negocios': 'affaires',
+        'tecnologia': 'technologie'
+      },
+      // Alemán
+      de: {
+        'general': 'allgemein',
+        'medicina': 'medizin',
+        'ingenieria': 'ingenieurwesen',
+        'derecho': 'recht',
+        'ciencias': 'wissenschaften',
+        'negocios': 'geschäft',
+        'tecnologia': 'technologie'
+      },
+      // Italiano
+      it: {
+        'general': 'generale',
+        'medicina': 'medicina',
+        'ingenieria': 'ingegneria',
+        'derecho': 'diritto',
+        'ciencias': 'scienze',
+        'negocios': 'affari',
+        'tecnologia': 'tecnologia'
+      },
+      // Portugués
+      pt: {
+        'general': 'geral',
+        'medicina': 'medicina',
+        'ingenieria': 'engenharia',
+        'derecho': 'direito',
+        'ciencias': 'ciências',
+        'negocios': 'negócios',
+        'tecnologia': 'tecnologia'
+      },
+      // Ruso
+      ru: {
+        'general': 'общий',
+        'medicina': 'медицина',
+        'ingenieria': 'инженерия',
+        'derecho': 'право',
+        'ciencias': 'науки',
+        'negocios': 'бизнес',
+        'tecnologia': 'технология'
+      },
+      // Japonés
+      ja: {
+        'general': '一般',
+        'medicina': '医学',
+        'ingenieria': '工学',
+        'derecho': '法律',
+        'ciencias': '科学',
+        'negocios': 'ビジネス',
+        'tecnologia': '技術'
+      },
+      // Chino
+      zh: {
+        'general': '一般',
+        'medicina': '医学',
+        'ingenieria': '工程',
+        'derecho': '法律',
+        'ciencias': '科学',
+        'negocios': '商业',
+        'tecnologia': '技术'
+      },
+      // Árabe
+      ar: {
+        'general': 'عام',
+        'medicina': 'طب',
+        'ingenieria': 'هندسة',
+        'derecho': 'قانون',
+        'ciencias': 'علوم',
+        'negocios': 'أعمال',
+        'tecnologia': 'تكنولوجيا'
+      }
+    };
+
+    // Usar traducción si existe, si no usar el original
+    const languageTranslations = subjectTranslations[targetLanguage] || subjectTranslations.es;
+    return languageTranslations[subject] || subject;
+  }
+
   // Generar asunto automático con IA basado en el contenido
   async generateSubjectFromContent(content, translationLanguage = 'es') {
     try {
@@ -1657,6 +1767,132 @@ Exemples de réponses valides:
 - "histoire ancienne"
 - "programmation web"
 - "biologie cellulaire"
+- "general"`,
+
+        de: `Sie sind Dicttr AI, spezialisiert auf die Analyse von Bildungsinhalten.
+
+Ihre Aufgabe ist es, den bereitgestellten Inhalt zu analysieren und ein geeignetes Thema/Fach zu generieren, das beschreibt, worum es in dem Material geht.
+
+ANWEISUNGEN:
+1. Analysieren Sie den Inhalt und extrahieren Sie das Hauptthema
+2. Generieren Sie ein prägnantes Thema (maximal 3-5 Wörter)
+3. Verwenden Sie gängige Bildungskategorien wie: Mathematik, Physik, Chemie, Biologie, Geschichte, Literatur, Programmierung, Medizin, Recht, Wirtschaft usw.
+4. Wenn Sie das Thema nicht bestimmen können, geben Sie "general" zurück
+5. Geben Sie NUR das Thema zurück, ohne Erklärungen oder zusätzlichen Text
+
+Gültige Antwortbeispiele:
+- "mathematik"
+- "alte geschichte"
+- "web-programmierung"
+- "zellbiologie"
+- "general"`,
+
+        it: `Sei Dicttr AI, specializzato nell'analisi di contenuti educativi.
+
+Il tuo compito è analizzare il contenuto fornito e generare un argomento/tema appropriato che descriva di cosa tratta il materiale.
+
+ISTRUZIONI:
+1. Analizza il contenuto ed estrai il tema principale
+2. Genera un argomento conciso (massimo 3-5 parole)
+3. Usa categorie educative comuni come: matematica, fisica, chimica, biologia, storia, letteratura, programmazione, medicina, diritto, economia, ecc.
+4. Se non riesci a determinare il tema, restituisci "general"
+5. Restituisci SOLO l'argomento, senza spiegazioni o testo aggiuntivo
+
+Esempi di risposte valide:
+- "matematica"
+- "storia antica"
+- "programmazione web"
+- "biologia cellulare"
+- "general"`,
+
+        pt: `Você é o Dicttr AI, especializado em análise de conteúdo educacional.
+
+Sua tarefa é analisar o conteúdo fornecido e gerar um assunto/tema apropriado que descreva sobre o que o material trata.
+
+INSTRUÇÕES:
+1. Analise o conteúdo e extraia o tema principal
+2. Gere um assunto conciso (máximo 3-5 palavras)
+3. Use categorias educacionais comuns como: matemática, física, química, biologia, história, literatura, programação, medicina, direito, economia, etc.
+4. Se você não conseguir determinar o tema, retorne "general"
+5. Retorne APENAS o assunto, sem explicações ou texto adicional
+
+Exemplos de respostas válidas:
+- "matemática"
+- "história antiga"
+- "programação web"
+- "biologia celular"
+- "general"`,
+
+        ru: `Вы - Dicttr AI, специализирующийся на анализе образовательного контента.
+
+Ваша задача - проанализировать предоставленный контент и сгенерировать подходящую тему/предмет, который описывает, о чем материал.
+
+ИНСТРУКЦИИ:
+1. Проанализируйте содержание и извлеките основную тему
+2. Сгенерируйте краткую тему (максимум 3-5 слов)
+3. Используйте распространенные образовательные категории, такие как: математика, физика, химия, биология, история, литература, программирование, медицина, право, экономика и т.д.
+4. Если вы не можете определить тему, верните "general"
+5. Верните ТОЛЬКО тему, без объяснений или дополнительного текста
+
+Примеры допустимых ответов:
+- "математика"
+- "древняя история"
+- "веб-программирование"
+- "клеточная биология"
+- "general"`,
+
+        ja: `あなたは教育コンテンツ分析に特化したDicttr AIです。
+
+あなたのタスクは、提供されたコンテンツを分析し、その教材が何について扱っているかを説明する適切な主題/トピックを生成することです。
+
+指示:
+1. コンテンツを分析し、主要なトピックを抽出する
+2. 簡潔な主題を生成する（最大3〜5語）
+3. 数学、物理学、化学、生物学、歴史、文学、プログラミング、医学、法律、経済学などの一般的な教育カテゴリを使用する
+4. トピックを特定できない場合は、"general"を返す
+5. 説明や追加のテキストなしで、主題のみを返す
+
+有効な回答例:
+- "数学"
+- "古代史"
+- "ウェブプログラミング"
+- "細胞生物学"
+- "general"`,
+
+        zh: `您是专门从事教育内容分析的Dicttr AI。
+
+您的任务是分析提供的内容并生成一个适当的主题/题目，描述该材料是关于什么的。
+
+说明:
+1. 分析内容并提取主要主题
+2. 生成简洁的主题（最多3-5个词）
+3. 使用常见的教育类别，如：数学、物理、化学、生物、历史、文学、编程、医学、法律、经济学等
+4. 如果您无法确定主题，请返回"general"
+5. 仅返回主题，无需解释或附加文本
+
+有效回答示例:
+- "数学"
+- "古代历史"
+- "网络编程"
+- "细胞生物学"
+- "general"`,
+
+        ar: `أنت Dicttr AI، متخصص في تحليل المحتوى التعليمي.
+
+مهمتك هي تحليل المحتوى المقدم وإنشاء موضوع/مادة مناسب يصف ما يدور حوله المادة.
+
+التعليمات:
+1. قم بتحليل المحتوى واستخراج الموضوع الرئيسي
+2. قم بإنشاء موضوع موجز (بحد أقصى 3-5 كلمات)
+3. استخدم فئات تعليمية شائعة مثل: الرياضيات، الفيزياء، الكيمياء، الأحياء، التاريخ، الأدب، البرمجة، الطب، القانون، الاقتصاد، إلخ.
+4. إذا لم تتمكن من تحديد الموضوع، قم بإرجاع "general"
+5. قم بإرجاع الموضوع فقط، دون تفسيرات أو نص إضافي
+
+أمثلة على الإجابات الصالحة:
+- "الرياضيات"
+- "التاريخ القديم"
+- "برمجة الويب"
+- "بيولوجيا الخلية"
 - "general"`
       };
 
