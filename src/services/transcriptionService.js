@@ -526,7 +526,12 @@ class TranscriptionService {
     // Generar subject automáticamente si no se proporciona o es "Nueva grabación"
     let subject = transcriptionData.subject;
     if (!subject || subject === 'Nueva grabación') {
-      subject = await this.generateSubjectFromContent(transcriptionData.enhanced_text || transcriptionData.original_text);
+      // Obtener el idioma de traducción de las opciones de idioma o usar español por defecto
+      const translationLanguage = languageOptions.translation_language || 'es';
+      subject = await this.generateSubjectFromContent(
+        transcriptionData.enhanced_text || transcriptionData.original_text, 
+        translationLanguage
+      );
       // Si falla la generación automática, usar "general" en lugar de "Nueva grabación"
       if (!subject) {
         subject = 'general';
@@ -1492,9 +1497,10 @@ IMPORTANTE:
   }
 
   // Generar asunto automático con IA basado en el contenido
-  async generateSubjectFromContent(content) {
+  async generateSubjectFromContent(content, translationLanguage = 'es') {
     try {
       console.log('🤖 Generando asunto automático con IA...');
+      console.log('🌍 Idioma para asunto:', translationLanguage);
 
       // Si el contenido es un objeto JSON, extraer el texto
       let textContent = content;
@@ -1520,7 +1526,9 @@ IMPORTANTE:
         ? textContent.substring(0, 1000) + '...'
         : textContent;
 
-      const systemPrompt = `Eres Dicttr AI, especializado en análisis de contenido educativo.
+      // Definir prompts por idioma
+      const subjectPrompts = {
+        es: `Eres Dicttr AI, especializado en análisis de contenido educativo.
 
 Tu tarea es analizar el contenido proporcionado y generar un asunto/tema apropiado que describa de qué trata el material.
 
@@ -1536,7 +1544,47 @@ Ejemplos de respuestas válidas:
 - "historia antigua"
 - "programación web"
 - "biología celular"
-- "general"`;
+- "general"`,
+
+        en: `You are Dicttr AI, specialized in educational content analysis.
+
+Your task is to analyze the provided content and generate an appropriate subject/topic that describes what the material is about.
+
+INSTRUCTIONS:
+1. Analyze the content and extract the main topic
+2. Generate a concise subject (maximum 3-5 words)
+3. Use common educational categories like: mathematics, physics, chemistry, biology, history, literature, programming, medicine, law, economics, etc.
+4. If you cannot determine the topic, return "general"
+5. Return ONLY the subject, without explanations or additional text
+
+Valid response examples:
+- "mathematics"
+- "ancient history"
+- "web programming"
+- "cell biology"
+- "general"`,
+
+        fr: `Vous êtes Dicttr AI, spécialisé dans l'analyse de contenu éducatif.
+
+Votre tâche est d'analyser le contenu fourni et de générer un sujet/thème approprié qui décrit le contenu du matériel.
+
+INSTRUCTIONS:
+1. Analysez le contenu et extrayez le thème principal
+2. Générez un sujet concis (maximum 3-5 mots)
+3. Utilisez des catégories éducatives courantes comme: mathématiques, physique, chimie, biologie, histoire, littérature, programmation, médecine, droit, économie, etc.
+4. Si vous ne pouvez pas déterminer le thème, retournez "general"
+5. Retournez SEULEMENT le sujet, sans explications ni texte supplémentaire
+
+Exemples de réponses valides:
+- "mathématiques"
+- "histoire ancienne"
+- "programmation web"
+- "biologie cellulaire"
+- "general"`
+      };
+
+      // Usar el prompt del idioma especificado o fallback a español
+      const systemPrompt = subjectPrompts[translationLanguage] || subjectPrompts.es;
 
       const response = await deepseek.chat([
         {
