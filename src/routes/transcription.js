@@ -247,7 +247,14 @@ router.post('/enhance', async (req, res) => {
       return res.status(400).json({ error: 'Se requiere el texto a mejorar' });
     }
 
-    const enhanced = await transcriptionService.enhanceTranscription(text, subject, translation_language);
+    // Traducir el asunto al idioma de traducción si se proporciona
+    let translatedSubject = subject;
+    if (subject && translation_language !== 'es') {
+      translatedSubject = transcriptionService.translateSubject(subject, translation_language);
+      console.log(`🌍 Asunto traducido: "${subject}" -> "${translatedSubject}" (${translation_language})`);
+    }
+
+    const enhanced = await transcriptionService.enhanceTranscription(text, translatedSubject, translation_language);
 
     res.json({
       success: true,
