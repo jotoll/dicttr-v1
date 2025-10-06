@@ -1,17 +1,18 @@
 # Usar Node.js 18 como imagen base con Chromium para generación de PDFs
 FROM node:20-alpine
 
-# Instalar Chromium, wget y dependencias necesarias para html-pdf-node
+# Instalar Chromium, curl, wget y dependencias necesarias para html-pdf-node
 RUN apk add --no-cache \
-    chromium \
-    wget \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    && rm -rf /var/cache/apk/*
+chromium \
+curl \
+wget \
+nss \
+freetype \
+freetype-dev \
+harfbuzz \
+ca-certificates \
+ttf-freefont \
+&& rm -rf /var/cache/apk/*
 
 # Establecer variables de entorno para Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
