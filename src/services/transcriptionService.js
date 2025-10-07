@@ -631,6 +631,90 @@ class TranscriptionService {
       console.error('Error en trackUserUsage:', error);
     }
   }
+
+  // Convert JSON enhanced content to blocks for PDF generation
+  jsonToBlocks(enhancedContent) {
+    try {
+      if (!enhancedContent) {
+        return [];
+      }
+
+      const blocks = [];
+
+      // Add title as heading block
+      if (enhancedContent.title) {
+        blocks.push({
+          type: 'heading',
+          level: 1,
+          content: enhancedContent.title
+        });
+      }
+
+      // Process sections
+      if (enhancedContent.sections && Array.isArray(enhancedContent.sections)) {
+        enhancedContent.sections.forEach(section => {
+          if (section.type === 'heading') {
+            blocks.push({
+              type: 'heading',
+              level: section.level || 2,
+              content: section.content
+            });
+          } else if (section.type === 'paragraph') {
+            blocks.push({
+              type: 'paragraph',
+              content: section.content
+            });
+          } else if (section.type === 'definition_list') {
+            if (section.term && section.definition) {
+              blocks.push({
+                type: 'definition',
+                term: section.term,
+                definition: section.definition
+              });
+            }
+          } else if (section.type === 'list') {
+            if (section.items && Array.isArray(section.items)) {
+              blocks.push({
+                type: 'list',
+                items: section.items
+              });
+            }
+          }
+        });
+      }
+
+      // Add key concepts as a list
+      if (enhancedContent.key_concepts && Array.isArray(enhancedContent.key_concepts)) {
+        blocks.push({
+          type: 'heading',
+          level: 2,
+          content: 'Conceptos Clave'
+        });
+        blocks.push({
+          type: 'list',
+          items: enhancedContent.key_concepts
+        });
+      }
+
+      // Add summary as paragraph
+      if (enhancedContent.summary) {
+        blocks.push({
+          type: 'heading',
+          level: 2,
+          content: 'Resumen'
+        });
+        blocks.push({
+          type: 'paragraph',
+          content: enhancedContent.summary
+        });
+      }
+
+      return blocks;
+    } catch (error) {
+      console.error('Error converting JSON to blocks:', error);
+      return [];
+    }
+  }
 }
 
 module.exports = new TranscriptionService();
