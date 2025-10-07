@@ -69,12 +69,13 @@ router.post('/upload-file', authenticateToken, upload.single('audio'), async (re
       format, 
       language = 'es', 
       translation_language = 'es',
-      transcriptionLanguage = language,  // Nuevo parámetro desde móvil
+      transcription_language = language,  // Parámetro desde móvil
+      transcriptionLanguage = transcription_language,  // Nuevo parámetro desde móvil
       translationLanguage = translation_language  // Nuevo parámetro desde móvil
     } = req.body;
     
     // Usar los nuevos parámetros si están disponibles, si no usar los antiguos
-    const finalTranscriptionLanguage = transcriptionLanguage || language;
+    const finalTranscriptionLanguage = transcriptionLanguage || transcription_language || language;
     const finalTranslationLanguage = translationLanguage || translation_language;
     
     console.log('🌍 Idiomas configurados:');
