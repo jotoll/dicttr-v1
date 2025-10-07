@@ -602,6 +602,35 @@ class TranscriptionService {
       return [];
     }
   }
+
+  // Track user usage for analytics
+  async trackUserUsage(userId, action, details = {}) {
+    try {
+      if (!supabase) {
+        console.warn('Supabase no configurado, no se puede trackear uso');
+        return;
+      }
+
+      const usageRecord = {
+        user_id: userId,
+        action: action,
+        details: JSON.stringify(details),
+        timestamp: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('user_usage')
+        .insert(usageRecord);
+
+      if (error) {
+        console.error('Error trackeando uso del usuario:', error);
+      } else {
+        console.log('✅ Uso trackeado:', action, 'para usuario:', userId);
+      }
+    } catch (error) {
+      console.error('Error en trackUserUsage:', error);
+    }
+  }
 }
 
 module.exports = new TranscriptionService();
