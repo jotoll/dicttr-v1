@@ -8,23 +8,24 @@ const DEEPSEEK_MODELS = {
   CODER: 'deepseek-coder'
 };
 
-// Crear cliente OpenAI configurado para DeepSeek
-const deepseekClient = new OpenAI({
-  baseURL: DEEPSEEK_API_URL,
-  apiKey: DEEPSEEK_API_KEY,
-});
+// Crear cliente OpenAI configurado para DeepSeek solo si hay API key
+let deepseekClient = null;
+if (DEEPSEEK_API_KEY && DEEPSEEK_API_KEY !== 'sk-your-deepseek-api-key-here' && 
+    !DEEPSEEK_API_KEY.includes('invalid') && !DEEPSEEK_API_KEY.includes('expired') && 
+    DEEPSEEK_API_KEY.length >= 20) {
+  
+  deepseekClient = new OpenAI({
+    baseURL: DEEPSEEK_API_URL,
+    apiKey: DEEPSEEK_API_KEY,
+  });
+}
 
 const deepseek = {
   async chat(messages, model = DEEPSEEK_MODELS.CHAT) {
     try {
-      // Verificar si tenemos API key válida
-      if (!DEEPSEEK_API_KEY || DEEPSEEK_API_KEY === 'sk-your-deepseek-api-key-here') {
-        throw new Error('DeepSeek API key not configured');
-      }
-
-      // Verificar si la API key parece ser inválida (basado en patrones comunes)
-      if (DEEPSEEK_API_KEY.includes('invalid') || DEEPSEEK_API_KEY.includes('expired') || DEEPSEEK_API_KEY.length < 20) {
-        throw new Error('DeepSeek API key appears invalid');
+      // Verificar si tenemos cliente configurado
+      if (!deepseekClient) {
+        throw new Error('DeepSeek API not configured - using local fallback');
       }
 
       const response = await deepseekClient.chat.completions.create({
@@ -37,7 +38,6 @@ const deepseek = {
       return response;
     } catch (error) {
       console.error('DeepSeek API error:', error.message);
-      console.error('Error details:', error.response?.data || error);
       throw new Error('Error calling DeepSeek API');
     }
   }
