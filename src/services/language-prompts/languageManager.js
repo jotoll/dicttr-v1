@@ -1,6 +1,7 @@
 // Gestor centralizado de prompts por idioma
 const subjectPrompts = require('./subjectPrompts');
 const enhancementPrompts = require('./enhancementPrompts');
+const blockGenerationPrompts = require('./blockGenerationPrompts');
 
 class LanguageManager {
   constructor() {
@@ -22,6 +23,21 @@ class LanguageManager {
   getEnhancementPrompt(language = 'es') {
     const targetLanguage = this.isLanguageSupported(language) ? language : 'es';
     return enhancementPrompts[targetLanguage] || enhancementPrompts.es;
+  }
+
+  // Obtener prompt para generación de bloques específicos
+  getBlockGenerationPrompt(blockType, language = 'es') {
+    const targetLanguage = this.isLanguageSupported(language) ? language : 'es';
+    const languagePrompts = blockGenerationPrompts[targetLanguage] || blockGenerationPrompts.es;
+    
+    // Verificar si el tipo de bloque está soportado
+    const supportedBlockTypes = ['heading', 'paragraph', 'concept_block', 'list', 'summary_block', 'key_concepts_block'];
+    if (!supportedBlockTypes.includes(blockType)) {
+      console.warn(`⚠️  Tipo de bloque no soportado: ${blockType}, usando 'paragraph' como fallback`);
+      blockType = 'paragraph';
+    }
+    
+    return languagePrompts[blockType] || languagePrompts.paragraph;
   }
 
   // Obtener todos los idiomas soportados

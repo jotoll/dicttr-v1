@@ -715,6 +715,149 @@ class TranscriptionService {
       return [];
     }
   }
+
+  // Generar contenido para bloque específico con IA
+  async generateBlock(blockType, userPrompt, contextText, translationLanguage = 'es') {
+    try {
+      console.log('🎯 Iniciando generateBlock...');
+      console.log('📦 Parámetros:', {
+        blockType,
+        userPromptLength: userPrompt?.length,
+        contextTextLength: contextText?.length,
+        translationLanguage
+      });
+
+      // Verificar si tenemos API key válida
+      if (!process.env.DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY === 'sk-your-deepseek-api-key-here') {
+        console.log('⚠️  API key de DeepSeek no configurada, usando generación local');
+        return this.localBlockGeneration(blockType, userPrompt, contextText, translationLanguage);
+      }
+
+      // Usar el gestor de idiomas para obtener el prompt específico del bloque
+      const systemPrompt = languageManager.getBlockGenerationPrompt(blockType, translationLanguage);
+
+      // Construir el prompt del usuario con contexto
+      const userContent = `
+Contexto del documento:
+${contextText}
+
+Instrucción del usuario: ${userPrompt}
+
+Genera un bloque de tipo "${blockType}" que sea relevante para el contexto y que responda a la instrucción del usuario.
+      `.trim();
+
+      console.log('🔄 Llamando a DeepSeek API...');
+      const response = await deepseek.chat([
+        {
+          role: "system",
+          content: systemPrompt
+        },
+        {
+          role: "user",
+          content: userContent
+        }
+      ], DEEPSEEK_MODELS.CHAT);
+
+      const generatedContent = response.choices[0].message.content;
+
+      // Parsear la respuesta según el tipo de bloque
+      let generatedBlock;
+      try {
+        // Intentar extraer JSON de code blocks markdown primero
+        const jsonMatch = generatedContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (jsonMatch && jsonMatch[1]) {
+          console.log('🎯 Extrayendo JSON de code block');
+          generatedBlock = JSON.parse(jsonMatch[1].trim());
+        } else {
+          // Si no hay code blocks, parsear directamente
+          generatedBlock = JSON.parse(generatedContent);
+        }
+      } catch (error) {
+        console.warn('Error parsing JSON from DeepSeek:', error.message);
+        // Fallback: crear un bloque básico con el contenido crudo
+        generatedBlock = {
+          type: blockType,
+          content: generatedContent
+        };
+      }
+
+      console.log('✅ Bloque generado exitosamente:', generatedBlock);
+      return {
+        generated_content: generatedBlock,
+        success: true
+      };
+
+    } catch (error) {
+      console.error('❌ ERROR en generateBlock:', error.message);
+      console.log('🔄 Usando generación local como fallback');
+      return this.localBlockGeneration(blockType, userPrompt, contextText, translationLanguage);
+    }
+  }
+
+  // Generación local de bloque como fallback
+  localBlockGeneration(blockType, userPrompt, contextText, translationLanguage = 'es') {
+    console.log(`🎯 Usando generación local de bloque (sin API externa) en idioma: ${translationLanguage}`);
+
+    // Crear un bloque básico según el tipo
+    let generatedBlock;
+    switch (blockType) {
+      case 'heading':
+        generatedBlock = {
+          type: 'heading',
+          level: 2,
+          content: `Bloque generado localmente: ${userPrompt}`
+        };
+        break;
+      case 'paragraph':
+        generatedBlock = {
+          type: 'paragraph',
+          content: `Este es un párrafo generado localmente en respuesta a: "${userPrompt}". El contexto del documento fue: ${contextText.substring(0, 100)}...`
+        };
+        break;
+      case 'concept_block':
+        generatedBlock = {
+          type: 'concept_block',
+          term: 'Concepto Local',
+          definition: `Definición generada localmente para: ${userPrompt}`,
+          examples: ['Ejemplo 1', 'Ejemplo 2']
+        };
+        break;
+      case 'list':
+        generatedBlock = {
+          type: 'list',
+          style: 'bulleted',
+          items: [
+            'Elemento 1 generado localmente',
+            'Elemento 2 generado localmente',
+            'Elemento 3 generado localmente'
+          ]
+        };
+        break;
+      case 'summary_block':
+        generatedBlock = {
+          type: 'summary_block',
+          content: `Resumen generado localmente para: ${userPrompt}. Contexto: ${contextText.substring(0, 200)}...`
+        };
+        break;
+      case 'key_concepts_block':
+        generatedBlock = {
+          type: 'key_concepts_block',
+          concepts: ['Concepto 1', 'Concepto 2', 'Concepto 3']
+        };
+        break;
+      default:
+        generatedBlock = {
+          type: 'paragraph',
+          content: `Contenido generado localmente para: ${userPrompt}`
+        };
+    }
+
+    return {
+      generated_content: generatedBlock,
+      success: true,
+      is_local: true
+    };
+  }
 }
 
 module.exports = new TranscriptionService();
