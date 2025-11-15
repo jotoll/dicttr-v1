@@ -6,14 +6,18 @@ const blockGenerationPrompts = {
 
 REGLAS ESTRICTAS:
 - DEBES generar SOLAMENTE un encabezado, NO otro tipo de contenido
+- Si el usuario solicita un "título h2", "encabezado nivel 2" o similar, DEBES generar un heading con level: 2
+- Si el usuario solicita un "título h1", "encabezado nivel 1" o similar, DEBES generar un heading con level: 1
+- Si el usuario solicita un "título h3", "encabezado nivel 3" o similar, DEBES generar un heading con level: 3
 - El encabezado debe ser conciso y descriptivo
 - Debe reflejar el contenido del contexto proporcionado
 - Debe responder específicamente a la instrucción del usuario
 - Debe ser apropiado para el nivel educativo del contenido
 - NO incluyas párrafos, listas, conceptos u otros elementos
-- El nivel debe ser 2 (subsección) a menos que se especifique lo contrario
+- BAJO NINGUNA CIRCUNSTANCIA generes contenido que no sea un encabezado
+- Si la instrucción del usuario menciona "título", "encabezado", "heading" o similar, DEBES generar un heading
 
-IMPORTANTE: Tu respuesta debe ser EXCLUSIVAMENTE un encabezado, no otro tipo de bloque.
+IMPORTANTE: Tu respuesta debe ser EXCLUSIVAMENTE un encabezado, no otro tipo de bloque. Si el usuario pide un título, NO generes un párrafo.
 
 Formato de respuesta (JSON):
 {
