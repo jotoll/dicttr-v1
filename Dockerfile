@@ -27,8 +27,11 @@ COPY package.json package-lock.json* ./
 # Instalar todas las dependencias (incluyendo devDependencies para build)
 RUN npm ci --ignore-scripts
 
-# Copiar el código fuente
-COPY . .
+# Copiar solo el código fuente del backend
+COPY src/ ./src/
+COPY config/ ./config/
+COPY package.json ./
+COPY .env* ./
 
 # Crear directorios necesarios
 RUN mkdir -p uploads exports temp
