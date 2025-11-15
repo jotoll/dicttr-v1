@@ -1178,10 +1178,17 @@ router.post('/generate-block', async (req, res) => {
       block_type: req.body.block_type,
       user_prompt_length: req.body.user_prompt?.length,
       context_text_length: req.body.context_text?.length,
-      subject: req.body.subject
+      subject: req.body.subject,
+      translation_language: req.body.translation_language
     });
     
-    const { block_type, user_prompt, context_text, subject = null } = req.body;
+    const { 
+      block_type, 
+      user_prompt, 
+      context_text, 
+      subject = null,
+      translation_language = 'es'  // Por defecto español si no se especifica
+    } = req.body;
 
     if (!block_type || !user_prompt || !context_text) {
       console.error('❌ Faltan parámetros requeridos');
@@ -1202,12 +1209,13 @@ router.post('/generate-block', async (req, res) => {
       });
     }
 
+    console.log('🌍 Idioma de traducción para generación:', translation_language);
     console.log('🔄 Llamando a generateBlock service...');
     const generatedBlock = await transcriptionService.generateBlock(
       block_type,
       user_prompt,
       context_text,
-      subject
+      translation_language  // Pasar el idioma de traducción correctamente
     );
 
     res.json({
