@@ -1,0 +1,21 @@
+# Archivos del backend que debemos mantener
+src/
+config/
+package.json
+package-lock.json
+README.md
+.dockerignore
+Dockerfile
+docker-compose.yml
+docker-compose.coolify.yml
+.gitignore
+SPEAKER_DIFFERENTIATION_IMPLEMENTATION.md
+test-speaker-differentiation.js
+test-complete-speaker-differentiation.js
+
+# Archivos opcionales (pueden mantenerse o eliminarse)
+# backend/
+# scripts/
+# shared/
+# uploads/
+# exports/

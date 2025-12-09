@@ -1,11 +1,10 @@
-# Archivo principal de docker-compose para Coolify
-# Contiene la configuración completa del servicio
+# Configuración optimizada para Coolify
+# Con health check funcional para Alpine Linux
 
 version: '3.8'
 
 services:
-  # Servicio principal
-  dicttr-backend-v2:
+  dicttr-backend:
     build:
       context: .
       dockerfile: Dockerfile
@@ -19,20 +18,16 @@ services:
       - GROQ_API_KEY=${GROQ_API_KEY}
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
-      - ALLOWED_ORIGINS=*
-      - DEBUG=false
-      - LOG_LEVEL=info
-      - MAX_FILE_SIZE=104857600
-      - UPLOAD_DIR=uploads/
-      - EXPORTS_DIR=exports/
       - JWT_SECRET=${JWT_SECRET}
+      - ALLOWED_ORIGINS=*
     volumes:
       - uploads:/app/uploads
       - exports:/app/exports
       - temp:/app/temp
     restart: unless-stopped
+    # Health check robusto para Alpine Linux
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

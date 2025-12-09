@@ -200,41 +200,27 @@ class TranscriptionService {
     }
   }
 
-  // Mejora local simplificada con detección básica de interlocutores
+  // Mejora local simplificada
   localEnhancement(rawText, subject = 'general', translationLanguage = 'es') {
     console.log(`🎯 Usando mejora local (sin API externa) en idioma: ${translationLanguage}`);
 
-    // Detectar si hay indicadores de múltiples interlocutores
-    const hasMultipleSpeakers = this.detectMultipleSpeakers(rawText);
-    
-    const sections = [
-      {
-        type: "heading",
-        level: 1,
-        content: `Transcripción sobre ${subject}`
-      },
-      {
-        type: "paragraph",
-        content: "Esta transcripción ha sido procesada localmente sin dependencia de servicios externos."
-      }
-    ];
-
-    // Si detectamos múltiples interlocutores, procesar el texto para separarlos
-    if (hasMultipleSpeakers) {
-      console.log('🎤 Detectados múltiples interlocutores en el texto');
-      const speakerSections = this.extractSpeakerSections(rawText);
-      sections.push(...speakerSections);
-    } else {
-      // Si no hay múltiples interlocutores, usar el texto completo
-      sections.push({
-        type: "paragraph",
-        content: rawText
-      });
-    }
-
     const enhancedData = {
       title: `Transcripción sobre ${subject}`,
-      sections: sections
+      sections: [
+        {
+          type: "heading",
+          level: 1,
+          content: `Transcripción sobre ${subject}`
+        },
+        {
+          type: "paragraph",
+          content: "Esta transcripción ha sido procesada localmente sin dependencia de servicios externos."
+        },
+        {
+          type: "paragraph",
+          content: rawText
+        }
+      ]
     };
 
     return {
@@ -243,8 +229,7 @@ class TranscriptionService {
       subject: subject,
       processed_at: new Date().toISOString(),
       was_chunked: false,
-      is_local: true,
-      has_speakers: hasMultipleSpeakers
+      is_local: true
     };
   }
 
@@ -616,352 +601,6 @@ class TranscriptionService {
       console.error('Error en getUserTranscriptions:', error);
       return [];
     }
-  }
-
-  // Track user usage for analytics
-  async trackUserUsage(userId, action, details = {}) {
-    try {
-      if (!supabase) {
-        console.warn('Supabase no configurado, no se puede trackear uso');
-        return;
-      }
-
-      const usageRecord = {
-        user_id: userId,
-        action: action,
-        details: JSON.stringify(details),
-        timestamp: new Date().toISOString()
-      };
-
-      const { error } = await supabase
-        .from('user_usage')
-        .insert(usageRecord);
-
-      if (error) {
-        console.error('Error trackeando uso del usuario:', error);
-      } else {
-        console.log('✅ Uso trackeado:', action, 'para usuario:', userId);
-      }
-    } catch (error) {
-      console.error('Error en trackUserUsage:', error);
-    }
-  }
-
-  // Convert JSON enhanced content to blocks for PDF generation
-  jsonToBlocks(enhancedContent) {
-    try {
-      if (!enhancedContent) {
-        return [];
-      }
-
-      const blocks = [];
-
-      // Add title as heading block
-      if (enhancedContent.title) {
-        blocks.push({
-          type: 'heading',
-          level: 1,
-          content: enhancedContent.title
-        });
-      }
-
-      // Process sections
-      if (enhancedContent.sections && Array.isArray(enhancedContent.sections)) {
-        enhancedContent.sections.forEach(section => {
-          if (section.type === 'heading') {
-            blocks.push({
-              type: 'heading',
-              level: section.level || 2,
-              content: section.content
-            });
-          } else if (section.type === 'paragraph') {
-            blocks.push({
-              type: 'paragraph',
-              content: section.content
-            });
-          } else if (section.type === 'definition_list') {
-            if (section.term && section.definition) {
-              blocks.push({
-                type: 'definition',
-                term: section.term,
-                definition: section.definition
-              });
-            }
-          } else if (section.type === 'list') {
-            if (section.items && Array.isArray(section.items)) {
-              blocks.push({
-                type: 'list',
-                items: section.items
-              });
-            }
-          }
-        });
-      }
-
-      // Add key concepts as a list
-      if (enhancedContent.key_concepts && Array.isArray(enhancedContent.key_concepts)) {
-        blocks.push({
-          type: 'heading',
-          level: 2,
-          content: 'Conceptos Clave'
-        });
-        blocks.push({
-          type: 'list',
-          items: enhancedContent.key_concepts
-        });
-      }
-
-      // Add summary as paragraph
-      if (enhancedContent.summary) {
-        blocks.push({
-          type: 'heading',
-          level: 2,
-          content: 'Resumen'
-        });
-        blocks.push({
-          type: 'paragraph',
-          content: enhancedContent.summary
-        });
-      }
-
-      return blocks;
-    } catch (error) {
-      console.error('Error converting JSON to blocks:', error);
-      return [];
-    }
-  }
-
-  // Generar contenido para bloque específico con IA
-  async generateBlock(blockType, userPrompt, contextText, translationLanguage = 'es') {
-    try {
-      console.log('🎯 Iniciando generateBlock...');
-      console.log('📦 Parámetros:', {
-        blockType,
-        userPromptLength: userPrompt?.length,
-        contextTextLength: contextText?.length,
-        translationLanguage
-      });
-
-      // Verificar si tenemos API key válida
-      if (!process.env.DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY === 'sk-your-deepseek-api-key-here') {
-        console.log('⚠️  API key de DeepSeek no configurada, usando generación local');
-        return this.localBlockGeneration(blockType, userPrompt, contextText, translationLanguage);
-      }
-
-      // Usar el gestor de idiomas para obtener el prompt específico del bloque
-      const systemPrompt = languageManager.getBlockGenerationPrompt(blockType, translationLanguage);
-
-      // Construir el prompt del usuario con contexto
-      const userContent = `
-Contexto del documento:
-${contextText}
-
-Instrucción del usuario: ${userPrompt}
-
-Genera un bloque de tipo "${blockType}" que sea relevante para el contexto y que responda a la instrucción del usuario.
-      `.trim();
-
-      console.log('🔄 Llamando a DeepSeek API...');
-      const response = await deepseek.chat([
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: userContent
-        }
-      ], DEEPSEEK_MODELS.CHAT);
-
-      const generatedContent = response.choices[0].message.content;
-
-      // Parsear la respuesta según el tipo de bloque
-      let generatedBlock;
-      try {
-        // Intentar extraer JSON de code blocks markdown primero
-        const jsonMatch = generatedContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-        if (jsonMatch && jsonMatch[1]) {
-          console.log('🎯 Extrayendo JSON de code block');
-          generatedBlock = JSON.parse(jsonMatch[1].trim());
-        } else {
-          // Si no hay code blocks, parsear directamente
-          generatedBlock = JSON.parse(generatedContent);
-        }
-      } catch (error) {
-        console.warn('Error parsing JSON from DeepSeek:', error.message);
-        // Fallback: crear un bloque básico con el contenido crudo
-        generatedBlock = {
-          type: blockType,
-          content: generatedContent
-        };
-      }
-
-      console.log('✅ Bloque generado exitosamente:', generatedBlock);
-      return {
-        generated_content: generatedBlock,
-        success: true
-      };
-
-    } catch (error) {
-      console.error('❌ ERROR en generateBlock:', error.message);
-      console.log('🔄 Usando generación local como fallback');
-      return this.localBlockGeneration(blockType, userPrompt, contextText, translationLanguage);
-    }
-  }
-
-  // Generación local de bloque como fallback
-  localBlockGeneration(blockType, userPrompt, contextText, translationLanguage = 'es') {
-    console.log(`🎯 Usando generación local de bloque (sin API externa) en idioma: ${translationLanguage}`);
-
-    // Crear un bloque básico según el tipo
-    let generatedBlock;
-    switch (blockType) {
-      case 'heading':
-        generatedBlock = {
-          type: 'heading',
-          level: 2,
-          content: `Bloque generado localmente: ${userPrompt}`
-        };
-        break;
-      case 'paragraph':
-        generatedBlock = {
-          type: 'paragraph',
-          content: `Este es un párrafo generado localmente en respuesta a: "${userPrompt}". El contexto del documento fue: ${contextText.substring(0, 100)}...`
-        };
-        break;
-      case 'concept_block':
-        generatedBlock = {
-          type: 'concept_block',
-          term: 'Concepto Local',
-          definition: `Definición generada localmente para: ${userPrompt}`,
-          examples: ['Ejemplo 1', 'Ejemplo 2']
-        };
-        break;
-      case 'list':
-        generatedBlock = {
-          type: 'list',
-          style: 'bulleted',
-          items: [
-            'Elemento 1 generado localmente',
-            'Elemento 2 generado localmente',
-            'Elemento 3 generado localmente'
-          ]
-        };
-        break;
-      case 'summary_block':
-        generatedBlock = {
-          type: 'summary_block',
-          content: `Resumen generado localmente para: ${userPrompt}. Contexto: ${contextText.substring(0, 200)}...`
-        };
-        break;
-      case 'key_concepts_block':
-        generatedBlock = {
-          type: 'key_concepts_block',
-          concepts: ['Concepto 1', 'Concepto 2', 'Concepto 3']
-        };
-        break;
-      default:
-        generatedBlock = {
-          type: 'paragraph',
-          content: `Contenido generado localmente para: ${userPrompt}`
-        };
-    }
-
-    return {
-      generated_content: generatedBlock,
-      success: true,
-      is_local: true
-    };
-  }
-
-  // Detectar si hay múltiples interlocutores en el texto
-  detectMultipleSpeakers(text) {
-    if (!text || typeof text !== 'string') return false;
-    
-    // Patrones mejorados para identificar interlocutores
-    const speakerPatterns = [
-      /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+:/m,  // Nombre: (ej: Juan:, María:)
-      /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+:/m,  // Nombre Apellido:
-      /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\s+\d+:/m,  // Nombre con número: (ej: Estudiante 1:)
-      /^[A-Z]+:/m,  // NOMBRE: (ej: ENTREVISTADOR:)
-      /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\s*-\s*/m,  // Nombre - 
-      /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+:\s*$/m,  // Nombre: (solo)
-    ];
-
-    // Contar líneas que parecen ser de diferentes hablantes
-    const lines = text.split('\n').filter(line => line.trim().length > 0);
-    let speakerLines = 0;
-    
-    for (const line of lines) {
-      for (const pattern of speakerPatterns) {
-        if (pattern.test(line.trim())) {
-          speakerLines++;
-          break;
-        }
-      }
-    }
-
-    // Si al menos 2 líneas parecen ser de diferentes hablantes
-    return speakerLines >= 2;
-  }
-
-  // Extraer secciones por interlocutor
-  extractSpeakerSections(text) {
-    const sections = [];
-    const lines = text.split('\n').filter(line => line.trim().length > 0);
-    
-    let currentSpeaker = null;
-    let currentContent = '';
-    
-    for (const line of lines) {
-      const trimmedLine = line.trim();
-      
-      // Buscar patrón de interlocutor mejorado (con o sin espacios al inicio)
-      const speakerMatch = trimmedLine.match(/^([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?):\s*(.*)$/) ||
-                          trimmedLine.match(/^([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\s+\d+):\s*(.*)$/) ||  // Nombre con número
-                          trimmedLine.match(/^([A-Z]+):\s*(.*)$/) ||  // NOMBRE en mayúsculas
-                          trimmedLine.match(/^([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)\s*-\s*(.*)$/);
-      
-      if (speakerMatch) {
-        // Guardar la sección anterior si existe
-        if (currentSpeaker && currentContent.trim()) {
-          sections.push({
-            type: "paragraph",
-            content: currentContent.trim(),
-            speaker: currentSpeaker
-          });
-        }
-        
-        // Iniciar nueva sección
-        currentSpeaker = speakerMatch[1];
-        currentContent = speakerMatch[2] || '';
-      } else {
-        // Continuar con el contenido del interlocutor actual
-        if (currentSpeaker) {
-          currentContent += ' ' + trimmedLine;
-        } else {
-          // Si no hay interlocutor identificado, añadir como contenido normal
-          currentContent += ' ' + trimmedLine;
-        }
-      }
-    }
-    
-    // Añadir la última sección
-    if (currentSpeaker && currentContent.trim()) {
-      sections.push({
-        type: "paragraph",
-        content: currentContent.trim(),
-        speaker: currentSpeaker
-      });
-    } else if (currentContent.trim()) {
-      // Si hay contenido pero no se identificó interlocutor
-      sections.push({
-        type: "paragraph",
-        content: currentContent.trim()
-      });
-    }
-    
-    return sections;
   }
 }
 

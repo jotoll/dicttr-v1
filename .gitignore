@@ -1,0 +1,152 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Runtime data
+uploads/
+exports/
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Build outputs
+dist/
+build/
+.out/
+.next/
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+.nuxt-prod
+
+# Gatsby files
+.cache/
+public
+
+# Vuepress dist output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# Temporary folders
+tmp/
+temp/
+
+# Audio test files
+test-audio.m4a
+*.m4a
+*.wav
+*.mp3
+
+# Test output files
+*.pdf
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Mobile app builds
+mobile/DicttrMobile/android/
+mobile/DicttrMobile/ios/
+mobile/DicttrMobile/.expo/
+mobile/DicttrMobile/.expo-shared/
+mobile/DicttrMobile/.next/
+mobile/DicttrMobile/.cache/
+mobile/DicttrMobile/.gradle/
+mobile/DicttrMobile/.idea/
+mobile/DicttrMobile/*.iml
+mobile/DicttrMobile/local.properties
+mobile/DicttrMobile/build/
+mobile/DicttrMobile/.env.local
+mobile/DicttrMobile/.env.development.local
+mobile/DicttrMobile/.env.production.local
+
+# Frontend builds
+frontend/dist/
+frontend/.next/
+frontend/.cache/
+frontend/.vite/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.production.local
+
+# Backend specific
+backend/uploads/
+backend/exports/
+backend/tests/output/
+backend/.env
+backend/.env.local
+
+# Test files (opcional, puedes decidir si incluirlos o no)
+# test-*.js
+# check-*.js
+# debug-*.js
